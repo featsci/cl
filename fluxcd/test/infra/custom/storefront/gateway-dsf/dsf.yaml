@@ -1,0 +1,48 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: dsf
+  namespace: dsf
+spec:
+  selector:
+    istio: ingressgateway 
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "dsf.${DOMAIN}"
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: tls-dsf-itops-space
+      hosts:
+        - "dsf.${DOMAIN}"
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: http-dsf
+  namespace: dsf
+spec:
+  hosts:
+  - "dsf.${DOMAIN}"
+  gateways:
+  - dsf
+  http:
+  - name: "connection-http"
+    match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        port:
+          number: 3000
+        host: dsf.dsf.svc.cluster.local
+

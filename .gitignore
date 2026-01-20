@@ -30,3 +30,10 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# cli/inventory.gen.yaml
+**/*.gen.yaml
+# cli/temp_k8s_images.tar
+**/temp_k8s_images.tar
+# cli/k8s-runner-temp
+**/k8s-runner-temp

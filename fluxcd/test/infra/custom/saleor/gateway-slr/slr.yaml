@@ -1,0 +1,48 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: slr
+  namespace: slr
+spec:
+  selector:
+    istio: ingressgateway 
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "slr.${DOMAIN}"
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: tls-slr-itops-space
+      hosts:
+        - "slr.${DOMAIN}"
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: http-slr
+  namespace: slr
+spec:
+  hosts:
+  - "slr.${DOMAIN}"
+  gateways:
+  - slr
+  http:
+  - name: "connection-http"
+    match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        port:
+          number: 80
+        host: slr.slr.svc.cluster.local
+

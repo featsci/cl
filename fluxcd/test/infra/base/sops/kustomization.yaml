@@ -1,0 +1,8 @@
+resources:
+  - 1-s3clo.yaml
+  - monitoring.yaml
+  - pg.yaml
+  - slr.yaml
+  - dsf.yaml
+  - harbor.yaml
+  - pmm.yaml

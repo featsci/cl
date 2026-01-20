@@ -1,0 +1,22 @@
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: deploy-s3clo-secrets-pmm
+  namespace: flux-system
+spec:
+  interval: 5m
+  prune: true
+  force: true 
+  sourceRef:
+    kind: Bucket
+    name: s3clo-secrets
+  path: "./test/pmm"
+
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+      
+  targetNamespace: pmm

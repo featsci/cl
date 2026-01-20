@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: istio-system
+generatorOptions:
+  disableNameSuffixHash: true
+configMapGenerator:
+  - name: base-values
+    files:
+      - values.yaml=base-values.yaml
+
+  - name: istiod-values
+    files:
+      - values.yaml=istiod-values.yaml
+
+  - name: ingressgateway-values
+    files:
+      - values.yaml=ingressgateway-values.yaml
+
+configurations:
+  - kustomizeconfig.yaml

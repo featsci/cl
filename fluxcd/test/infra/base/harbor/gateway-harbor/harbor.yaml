@@ -1,0 +1,48 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: gateway-harbor
+  namespace: harbor
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "harbor.${DOMAIN}"
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: tls-harbor-itops-space
+      hosts:
+        - "harbor.${DOMAIN}"
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: http-harbor
+  namespace: harbor
+spec:
+  hosts:
+  - "harbor.${DOMAIN}"
+  gateways:
+  - gateway-harbor
+  http:
+  - name: "connection-http"
+    match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        port:
+          number: 80
+        host: harbor.harbor.svc.cluster.local
+

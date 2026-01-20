@@ -1,0 +1,25 @@
+resources:
+  # Namespaces
+  - "./namespaces"
+  # # sops
+  - "./sops/sops-k.yaml"
+  # pg
+  - "./pg/pg-k.yaml"
+  # pmm
+  - "./pmm"
+  # istio
+  - "./istio/istio-k.yaml"
+  # monitoring
+  - "./monitoring/values"
+  - "./monitoring/monitoring.yaml"
+  # cert-manager
+  - "./cert-manager/cert-manager-k.yaml"
+  - "./cert-manager/letsencrypt-issuer-k.yaml" # WARNING -- THIS MAY CAUSE “LET'S ENCRYPT” limits.
+  # harbor
+  - "./harbor/harbor-k.yaml"
+  # Persistent Volumes for redis
+  - "./ot-redis/redispv/pv.yaml"
+  # ot-redis
+  - "./ot-redis/values"
+  - "./ot-redis/ot-redis-operator.yaml"
+  - "./ot-redis/ot-redis-replication.yaml"

@@ -1,0 +1,17 @@
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: pg-components
+  namespace: flux-system
+spec:
+  targetNamespace: pg
+  dependsOn:
+    - name: sops-components
+  interval: 10m
+  path: ./fluxcd/test/infra/base/pg
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system

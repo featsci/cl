@@ -1,0 +1,13 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: Bucket
+metadata:
+  name: s3clo-secrets
+  namespace: flux-system
+spec:
+  interval: 1m
+  provider: generic
+  bucketName: my-secrets-bucket
+  endpoint: storage.clo.ru
+  region: us-east-1
+  secretRef:
+    name: s3-sops
