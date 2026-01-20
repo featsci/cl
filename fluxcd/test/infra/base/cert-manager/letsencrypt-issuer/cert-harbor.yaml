@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: harbor-itops-space-crt-production
+  namespace: istio-system
+spec:
+  secretName: tls-harbor-itops-space
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-production-key-harbor
+  commonName: harbor.${DOMAIN}
+  dnsNames:
+  - harbor.${DOMAIN}

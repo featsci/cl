@@ -1,0 +1,3 @@
+resources:
+  - values
+  - cert-manager.yaml

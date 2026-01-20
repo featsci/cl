@@ -1,0 +1,22 @@
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: deploy-s3clo-secrets-dsf
+  namespace: flux-system
+spec:
+  interval: 5m
+  prune: true
+  force: true 
+  sourceRef:
+    kind: Bucket
+    name: s3clo-secrets
+  path: "./test/dsf"
+
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age
+      
+  targetNamespace: dsf

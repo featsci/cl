@@ -1,0 +1,276 @@
+name: Deploy Infrastructure Pipeline
+
+on:
+  # --- Manual Trigger (for Deployment) ---
+  workflow_dispatch: 
+    inputs:
+      cluster_name:
+        description: 'Cluster Name (-name)'
+        required: true
+        default: 'test'
+      target_domain:
+        description: 'Domain for Load Test (-hload)'
+        required: true
+        default: 'slr.'
+      storefront_branch:
+        description: 'Storefront branch to build'
+        required: false
+        default: 'main'
+  
+  # --- Automatic Triggers (for Security Scan ONLY) ---
+  push:
+  pull_request:
+
+jobs:
+  # ---------------------------------------------------------
+  # JOB 1: SECURITY SCAN
+  # ---------------------------------------------------------
+  security:
+    runs-on: ubuntu-latest
+    # Important: Set working directory to 'cli' because your Go code resides there
+    defaults:
+      run:
+        working-directory: cli 
+    env:
+      # Disable CGO to prevent errors with sys/unix packages during scan
+      CGO_ENABLED: 0
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.25'
+          cache: true
+          cache-dependency-path: cli/go.sum
+
+      - name: Install Dependencies
+        run: |
+          # Force update sys package to fix "without types" error
+          go get -u golang.org/x/sys
+          go mod tidy
+          go mod download
+
+      # 1. Vulnerability Check (govulncheck)
+      - name: Install and Run govulncheck
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+
+      # 2. Static Code Analysis (gosec)
+      # Running locally (not via Docker) to see dependencies
+      - name: Install and Run Gosec
+        run: |
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
+          # Using -no-fail to see the report without breaking the pipeline immediately.
+          # Remove -no-fail once you fix the reported issues (file permissions, etc.).
+          gosec -no-fail ./...
+
+      # # 3. Secret Detection (Gitleaks)
+      # - name: Gitleaks
+      #   uses: gitleaks/gitleaks-action@v2
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ---------------------------------------------------------
+  # JOB 2: DEPLOY PIPELINE
+  # ---------------------------------------------------------
+  deploy-pipeline:
+
+    if: github.event_name == 'workflow_dispatch'
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 120 
+
+    env:
+      # Go and CLI settings
+      CGO_ENABLED: 0
+      # Variables for CLI (fetched from Secrets)
+      CLO_AUTH_TOKEN: ${{ secrets.CLO_AUTH_TOKEN }}
+      CLO_OBJECT_ID: ${{ secrets.CLO_OBJECT_ID }}
+      S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
+      S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+      S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+      S3_BUCKET: ${{ secrets.S3_BUCKET }}
+      YCLOUD_TOKEN: ${{ secrets.YCLOUD_TOKEN }}
+      YCLOUD_FOLDER_ID: ${{ secrets.YCLOUD_FOLDER_ID }}
+      YCLOUD_SA_ID: ${{ secrets.YCLOUD_SA_ID }}
+      # For Flux (can use standard actions token or PAT)
+      GITHUB_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+      # Add key for SOPS
+      SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+
+      # --- Harbor Credentials ---
+      # Using admin, as the cluster is ephemeral
+      HARBOR_USERNAME: admin
+      HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+      
+      # --- Docker Config ---
+      # Your Harbor address
+      IMAGE_REGISTRY: harbor.${{ secrets.DOMAIN }}
+      # Project/Image (library is the default project in Harbor)
+      IMAGE_NAME: library/storefront
+      # DOMAIN for Flux/Cert Manager environment variables
+      DOMAIN: ${{ secrets.DOMAIN }}
+      # ACME_EMAIL for Cert Manager environment variables
+      ACME_EMAIL: ${{ secrets.ACME_EMAIL }}
+      CLO_LB_IP: ${{ secrets.CLO_LB_IP }}
+
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.25'
+          cache: true
+          cache-dependency-path: cli/go.sum
+
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          # Write key from secrets to file
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/clo
+          # Set correct permissions (must be 600)
+          chmod 600 ~/.ssh/clo
+          # Add config to prevent asking for host confirmation
+          echo "StrictHostKeyChecking no" >> ~/.ssh/config
+
+      - name: Build CLI Tool
+        run: |
+          cd cli
+          go mod tidy
+          # Build binary and place it in the root (one level up)
+          go build -o ../ops-cli ./cmd/cli
+          cd ..
+          chmod +x ops-cli
+
+      # PIPELINE STEPS (Run from cli folder so go build sees the code)
+      - name: Create VMs
+        run: |
+          cd cli
+          ../ops-cli -cluster -name ${{ inputs.cluster_name }} -nocheck
+
+      - name: Create Load Balancer
+        run: |
+          cd cli
+          ../ops-cli -lbclo -name ${{ inputs.cluster_name }}
+          echo sleep 150
+          sleep 150
+
+      - name: Check VMs Reachability
+        run: |
+          cd cli
+          ../ops-cli -cluster -name ${{ inputs.cluster_name }}
+
+      - name: Mount Disks
+        run: |
+          cd cli
+          ../ops-cli -mount -name ${{ inputs.cluster_name }}
+
+
+      - name: Set Permissions on Mounted Disks
+        run: |
+          cd cli
+          ../ops-cli -permissions -name ${{ inputs.cluster_name }}
+
+      - name: Add user
+        run: |
+          cd cli
+          ../ops-cli -name ${{ inputs.cluster_name }} -add-user "devtestusr:${{ secrets.SSH_PUBLIC_KEY }}"
+
+      - name: Deploy Kubernetes (Kubespray)
+        run: |
+          cd cli
+          ../ops-cli -deploy -name ${{ inputs.cluster_name }}
+
+      - name: Bootstrap Flux
+        env:
+          DOMAIN: ${{ env.DOMAIN }}
+          ACME_EMAIL: ${{ env.ACME_EMAIL }}
+        run: |
+          cd cli
+          ../ops-cli -flux -name ${{ inputs.cluster_name }}
+
+      - name: Trigger Database Restore from Backup
+        run: |
+          cd cli
+          ../ops-cli -name ${{ inputs.cluster_name }}  -cmcreate 'pg:pg-db-values-switch:{"dataSource":{"postgresCluster":{"clusterName":"pg-db","repoName":"repo1","options":["--set=20251226-133733F_20251226-140728I","--type=immediate"],"tolerations":[{"key":"postgresqltaint","operator":"Equal","value":"yestaint","effect":"NoSchedule"}]},"pgbackrest":{"stanza":"db","configuration":[{"secret":{"name":"clo-s3-secret"}}],"tolerations":[{"key":"postgresqltaint","operator":"Equal","value":"yestaint","effect":"NoSchedule"}],"repo":{"name":"repo1","s3":{"bucket":"pgbak","endpoint":"storage.clo.ru","region":"us-east-1"}}}}}'
+
+      - name: Suspend Backend Services
+        run: |
+          cd cli
+          ../ops-cli -name ${{ inputs.cluster_name }} -cmcreate 'slr:slr-values-switch:{"migrationjob":{"enabled":false},"api":{"enabled":false},"beat":{"enabled":false},"worker":{"enabled":false}}'
+
+      - name: Suspend Storefront Services
+        run: |
+          cd cli
+          ../ops-cli -name ${{ inputs.cluster_name }} -cmcreate 'dsf:dsf-values-switch:{"storefront":{"enabled":false}}'
+
+
+      - name: Status Restore DB
+        run: |
+          cd cli
+          ../ops-cli -name ${{ inputs.cluster_name }} -statusrestoredb
+
+      - name: Disable Database Restore Mode
+        run: |
+          cd cli
+          ../ops-cli -name ${{ inputs.cluster_name }} -cmcreate 'pg:pg-db-values-switch:{}'
+
+      - name: Resume Backend Services
+        run: |
+          cd cli
+          ../ops-cli -name ${{ inputs.cluster_name }} -cmcreate 'slr:slr-values-switch:{"migrationjob":{"enabled":true},"api":{"enabled":true},"beat":{"enabled":true},"worker":{"enabled":true}}'
+          echo sleep 350
+          sleep 350
+
+      - name: Wait for Production Certificates
+        run: |
+          cd cli
+          ../ops-cli -name ${{ inputs.cluster_name }} -wait-cert "istio-system:monitoring-itops-space-crt-production"
+          ../ops-cli -name ${{ inputs.cluster_name }} -wait-cert "istio-system:slr-itops-space-crt-production"
+          ../ops-cli -name ${{ inputs.cluster_name }} -wait-cert "istio-system:dsf-itops-space-crt-production"
+          ../ops-cli -name ${{ inputs.cluster_name }} -wait-cert "istio-system:harbor-itops-space-crt-production"
+
+      - name: Login to Harbor
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.IMAGE_REGISTRY }}
+          username: ${{ env.HARBOR_USERNAME }}
+          password: ${{ env.HARBOR_PASSWORD }}
+
+      - name: Build & Push Storefront Image
+        uses: docker/build-push-action@v6
+        with:
+          context: docker/storefront
+          file: docker/storefront/Dockerfile
+          push: true
+          build-args: |
+            REPO_BRANCH=${{ inputs.storefront_branch }}
+            NEXT_PUBLIC_SALEOR_API_URL=https://slr.${{ secrets.DOMAIN }}/graphql/
+            NEXT_PUBLIC_STOREFRONT_URL=https://dsf.${{ secrets.DOMAIN }}
+            NEXT_PUBLIC_DEFAULT_CHANNEL=default-channel
+            NODE_TLS_REJECT_UNAUTHORIZED=0
+          tags: |
+            ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}.${{ github.run_attempt }}
+
+      - name: Resume Storefront Services
+        run: |
+          cd cli
+          echo 'dsf:dsf-values-switch:{"storefront":{"enabled":true},"image":{"tag":"${{ github.run_number }}.${{ github.run_attempt }}"}}'
+          ../ops-cli -name ${{ inputs.cluster_name }} -cmcreate 'dsf:dsf-values-switch:{"storefront":{"enabled":true},"image":{"tag":"${{ github.run_number }}.${{ github.run_attempt }}"}}'
+
+      - name: Run YCloud Load Test (Creation)
+        run: |
+          cd cli
+          ../ops-cli -hload ${{ inputs.target_domain }} -script ../k6scripts/test.js
+
+      - name: Cleanup YCloud Load Test Resources
+        if: always()
+        run: |
+          cd cli
+          ../ops-cli -hload ${{ inputs.target_domain }} -delete -name ${{ inputs.cluster_name }}

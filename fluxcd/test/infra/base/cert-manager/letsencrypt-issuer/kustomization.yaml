@@ -1,0 +1,9 @@
+resources:
+  - letsencrypt-issuer-monitoring.yaml
+  - cert-monitoring.yaml
+  - letsencrypt-issuer-slr.yaml
+  - cert-slr.yaml
+  - letsencrypt-issuer-harbor.yaml
+  - cert-harbor.yaml
+  - letsencrypt-issuer-dsf.yaml
+  - cert-dsf.yaml

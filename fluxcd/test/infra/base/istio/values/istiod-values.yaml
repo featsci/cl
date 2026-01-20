@@ -1,0 +1,8 @@
+meshConfig:
+  accessLogFile: /dev/stdout
+autoscaleMin: 1
+autoscaleMax: 1
+resources:
+  requests:
+    cpu: 10m
+    memory: 128Mi

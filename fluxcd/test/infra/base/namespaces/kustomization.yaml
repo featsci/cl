@@ -1,0 +1,10 @@
+resources:
+  - ns-cert-manager.yaml
+  - ns-istio-system.yaml
+  - ns-monitoring.yaml
+  - ns-ot-operators.yaml
+  - ns-pg.yaml
+  - ns-slr.yaml
+  - ns-harbor.yaml
+  - ns-dsf.yaml
+  - ns-pmm.yaml

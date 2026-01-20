@@ -1,0 +1,24 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: redis-replication
+  namespace: ot-operators
+spec:
+  targetNamespace: ot-operators
+  interval: 10m
+  releaseName: redis-replication
+  dependsOn:
+    - name: redis-operator
+      namespace: ot-operators
+  chart:
+    spec:
+      chart: redis-replication
+      version: '0.16.11'
+      sourceRef:
+        kind: HelmRepository
+        name: ot-helm
+      interval: 5m
+  valuesFrom:
+    - kind: ConfigMap
+      name: ot-redis-replication-values

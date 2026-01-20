@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: pg
+generatorOptions:
+  disableNameSuffixHash: true
+configMapGenerator:
+  - name: pg-operator-values
+    files:
+      - values.yaml=pg-operator-values.yaml
+
+  - name: pg-db-values
+    files:
+      - values.yaml=pg-db-values.yaml
+configurations:
+  - kustomizeconfig.yaml

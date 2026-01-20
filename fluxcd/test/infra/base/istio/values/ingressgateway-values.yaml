@@ -1,0 +1,82 @@
+replicaCount: 2
+resources:
+  requests:
+    cpu: 50m
+    memory: 50Mi
+  limits:
+    cpu: 3600m
+    memory: 1024Mi
+autoscaling:
+  enabled: false
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: webnode
+              operator: In
+              values:
+                - yesnaff
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key:  app.kubernetes.io/instance
+            operator: In
+            values:
+            - istio-ingressgateway
+        topologyKey: "kubernetes.io/hostname"
+    # # HARD
+    # requiredDuringSchedulingIgnoredDuringExecution:
+    # - labelSelector:
+    #     matchExpressions:
+    #     - key:  app.kubernetes.io/instance
+    #       operator: In
+    #       values:
+    #       - istio-ingressgateway
+    #   topologyKey: "kubernetes.io/hostname"
+
+tolerations:
+  - key: webtaint
+    operator: Equal
+    value: yestaint
+    effect: NoSchedule
+
+service:
+  # # Type of service. Set to "None" to disable the service entirely
+  # type: LoadBalancer
+  # # Set to a specific ClusterIP, or "" for automatic assignment
+  # clusterIP: ""
+  type: NodePort
+
+  ports:
+  - name: status-port
+    port: 15021
+    protocol: TCP
+    targetPort: 15021
+
+  - name: http2
+    port: 80
+    protocol: TCP
+    targetPort: 80
+    nodePort: 30080   
+
+  - name: https
+    port: 443
+    protocol: TCP
+    targetPort: 443
+    nodePort: 30443
+
+  annotations: {}
+  loadBalancerIP: ""
+  loadBalancerSourceRanges: []
+  externalTrafficPolicy: Local # externalTrafficPolicy: "" 
+  externalIPs: []
+  ipFamilyPolicy: ""
+  ipFamilies: []
+  ## Whether to automatically allocate NodePorts (only for LoadBalancers).
+  # allocateLoadBalancerNodePorts: false
+  ## Set LoadBalancer class (only for LoadBalancers).
+  # loadBalancerClass: ""

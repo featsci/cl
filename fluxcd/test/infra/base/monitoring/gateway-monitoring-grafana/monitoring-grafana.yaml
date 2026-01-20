@@ -1,0 +1,48 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: gateway-monitoring-grafana
+  namespace: monitoring
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "monitoring.${DOMAIN}"
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: tls-monitoring-itops-space
+      hosts:
+        - "monitoring.${DOMAIN}"
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: http-monitoring-grafana
+  namespace: monitoring
+spec:
+  hosts:
+  - "monitoring.${DOMAIN}"
+  gateways:
+  - gateway-monitoring-grafana
+  http:
+  - name: "connection-http"
+    match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        port:
+          number: 80
+        host: monitoring-grafana.monitoring.svc.cluster.local
+

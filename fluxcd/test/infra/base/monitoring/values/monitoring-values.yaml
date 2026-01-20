@@ -1,0 +1,120 @@
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: prometheusnode
+              operator: In
+              values:
+              - yesnaff
+    tolerations:
+    - effect: NoSchedule
+      key: prometheustaint
+      operator: Equal
+      value: yestaint
+grafana:
+  admin:
+    existingSecret: 'gp'
+  tolerations:
+  - effect: NoSchedule
+    key: prometheustaint
+    operator: Equal
+    value: yestaint
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: prometheusnode
+            operator: In
+            values:
+            - yesnaff
+kube-state-metrics:
+  tolerations:
+  - effect: NoSchedule
+    key: prometheustaint
+    operator: Equal
+    value: yestaint
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: prometheusnode
+            operator: In
+            values:
+            - yesnaff
+prometheusOperator:
+  admissionWebhooks:
+    deployment:
+      enabled: false
+      tolerations:
+      - effect: NoSchedule
+        key: prometheustaint
+        operator: Equal
+        value: yestaint
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: prometheusnode
+                operator: In
+                values:
+                - yesnaff
+    patch:
+      enabled: true
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: prometheusnode
+                operator: In
+                values:
+                - yesnaff
+      tolerations:
+      - effect: NoSchedule
+        key: prometheustaint
+        operator: Equal
+        value: yestaint
+  tolerations:
+  - effect: NoSchedule
+    key: prometheustaint
+    operator: Equal
+    value: yestaint
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: prometheusnode
+            operator: In
+            values:
+            - yesnaff
+prometheus:
+  enabled: true
+  prometheusSpec:
+    tolerations:
+    - effect: NoSchedule
+      key: prometheustaint
+      operator: Equal
+      value: yestaint
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: prometheusnode
+              operator: In
+              values:
+              - yesnaff
+prometheus-node-exporter:
+  prometheus:
+    monitor:
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: instance

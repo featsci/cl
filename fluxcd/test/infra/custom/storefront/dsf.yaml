@@ -1,0 +1,61 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: dsf
+  namespace: dsf
+spec:
+  interval: 1m
+  releaseName: dsf
+  dependsOn:
+    - name: pg-db
+      namespace: pg
+    - name: redis-replication
+      namespace:  ot-operators
+    - name: harbor
+      namespace:  harbor
+    - name: slr
+      namespace:  slr
+  install:
+    timeout: 25m
+    remediation:
+      retries: 3
+
+  upgrade:
+    timeout: 15m
+    remediation:
+      retries: 3
+
+  chart:
+    spec:
+      chart: fluxcd/test/infra/custom/storefront/chart/dsf
+      version: '0.1.2'
+      sourceRef:
+        kind: GitRepository
+        name: flux-system
+        namespace: flux-system
+  valuesFrom:
+    - kind: ConfigMap
+      name: dsf-values
+    - kind: ConfigMap
+      name: dsf-values-switch
+      valuesKey: values-switch.yaml
+# ---
+# apiVersion: kustomize.toolkit.fluxcd.io/v1
+# kind: Kustomization
+# metadata:
+#   name: gateway-dsf
+#   namespace: flux-system
+# spec:
+#   postBuild:
+#     substituteFrom:
+#       - kind: Secret
+#         name: cluster-domain
+#   targetNamespace: dsf
+#   dependsOn:
+#     - name: istio-components
+#   interval: 1m
+#   path: ./fluxcd/test/infra/custom/storefront/gateway-dsf
+#   prune: true
+#   sourceRef:
+#     kind: GitRepository
+#     name: flux-system

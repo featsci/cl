@@ -1,0 +1,4 @@
+resources:
+  - values
+  - harbor.yaml
+  - gateway-harbor
