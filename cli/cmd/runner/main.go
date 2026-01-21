@@ -518,7 +518,7 @@ func runFlux() {
 		fmt.Println("[ERROR] flux not found")
 		return
 	}
-	cmdArgs := []string{"bootstrap", "github", "--token-auth", "--owner=featsci", "--repository=cli", "--branch=main", "--path=flux/test", "--private", "--kubeconfig=/kubeconfig"}
+	cmdArgs := []string{"bootstrap", "github", "--token-auth", "--owner=featsci", "--repository=cl", "--branch=main", "--path=flux/test", "--private", "--kubeconfig=/kubeconfig"}
 	cmd := exec.Command(fluxBin, cmdArgs...)
 	cmd.Env = os.Environ()
 	cmd.Stdin = os.Stdin
