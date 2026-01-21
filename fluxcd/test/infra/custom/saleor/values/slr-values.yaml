@@ -47,15 +47,16 @@ ingress:
   #      - chart-example.local
 
 api:
-  replicaCount: 2
+  replicaCount: 6
   workers: 2
-  resources:
-    requests:
-      cpu: "50m"
-      memory: "128Mi"
-    limits:
-      cpu: "1000m"
-      memory: "1512Mi"
+  resources: {}
+  # resources:
+  #   requests:
+  #     cpu: "50m"
+  #     memory: "128Mi"
+  #   limits:
+  #     cpu: "1000m"
+  #     memory: "1512Mi"
   livenessProbe:
     tcpSocket:
       port: 8000
@@ -68,19 +69,20 @@ api:
     periodSeconds: 5
   migrations:
     enabled: true
-    resources:
-      requests:
-        cpu: "50m"
-        memory: "128Mi"
-      limits:
-        cpu: "1000m"
-        memory: "1024Mi"
+    resources: {}
+    # resources:
+    #   requests:
+    #     cpu: "50m"
+    #     memory: "128Mi"
+    #   limits:
+    #     cpu: "1000m"
+    #     memory: "1024Mi"
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
         nodeSelectorTerms:
           - matchExpressions:
-              - key: webnode
+              - key: slrnode
                 operator: In
                 values:
                   - yesnaff
@@ -97,7 +99,7 @@ api:
           topologyKey: "kubernetes.io/hostname"
   # tolerations: {}
   tolerations:
-    - key: webtaint
+    - key: slrtaint
       operator: Equal
       value: yestaint
       effect: NoSchedule
@@ -105,13 +107,14 @@ api:
 beat:
   databaseSchedulerEnabled: false
   replicaCount: 1
-  resources:
-    requests:
-      cpu: "50m"
-      memory: "128Mi"
-    limits:
-      cpu: "1000m"
-      memory: "1024Mi"
+  resources: {}
+  # resources:
+  #   requests:
+  #     cpu: "50m"
+  #     memory: "128Mi"
+  #   limits:
+  #     cpu: "1000m"
+  #     memory: "1024Mi"
   livenessProbe:
     exec:
       command:
@@ -159,13 +162,14 @@ beat:
 
 worker:
   replicaCount: 2
-  resources:
-    requests:
-      cpu: "50m"
-      memory: "128Mi"
-    limits:
-      cpu: "1000m"
-      memory: "1024Mi"
+  resources: {}
+  # resources:
+  #   requests:
+  #     cpu: "50m"
+  #     memory: "128Mi"
+  #   limits:
+  #     cpu: "1000m"
+  #     memory: "1024Mi"
   livenessProbe:
     exec:
       command:
