@@ -80,7 +80,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
 
     runs-on: ubuntu-latest
-    timeout-minutes: 120 
+    timeout-minutes: 250 
 
     env:
       # Go and CLI settings
