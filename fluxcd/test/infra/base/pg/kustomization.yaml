@@ -2,6 +2,6 @@ resources:
   - pg-pv.yaml
   - values
   - pg-operator.yaml
-  - pg-db.yaml
+  # - pg-db.yaml
 
 
