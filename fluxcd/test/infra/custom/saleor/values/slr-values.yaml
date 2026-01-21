@@ -47,7 +47,7 @@ ingress:
   #      - chart-example.local
 
 api:
-  replicaCount: 6
+  replicaCount: 9
   workers: 2
   resources: {}
   # resources:
