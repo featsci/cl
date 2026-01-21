@@ -308,10 +308,6 @@ func getDefaultConfig() *Config {
 			{
 				NamePrefix: "slr",
 				Role:       "worker",
-				LBRules: []LBRuleConfig{
-					{ExtPort: 80, IntPort: 30080},
-					{ExtPort: 443, IntPort: 30443},
-				},
 				Instances: map[int]InstanceConfig{
 					1: {Enabled: true},
 					2: {Enabled: true},
