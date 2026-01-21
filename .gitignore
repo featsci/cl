@@ -37,3 +37,5 @@ go.work.sum
 **/temp_k8s_images.tar
 # cli/k8s-runner-temp
 **/k8s-runner-temp
+# cli/k6_template.yaml
+**/k6_template.yaml

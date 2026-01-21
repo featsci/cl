@@ -167,7 +167,7 @@ func getDefaultConfig() *Config {
 						},
 					},
 				},
-				Flavor:     Flavor{RAM: 2, VCPUs: 2},
+				Flavor:     Flavor{RAM: 16, VCPUs: 4},
 				ExternalIP: false,
 				Disks: []Disk{
 					{Size: 20, Bootable: true, Type: "storage"},
@@ -302,6 +302,34 @@ func getDefaultConfig() *Config {
 				},
 				Taints: []string{
 					"webtaint=yestaint:NoSchedule",
+				},
+			},
+			// --- slr ---
+			{
+				NamePrefix: "slr",
+				Role:       "worker",
+				LBRules: []LBRuleConfig{
+					{ExtPort: 80, IntPort: 30080},
+					{ExtPort: 443, IntPort: 30443},
+				},
+				Instances: map[int]InstanceConfig{
+					1: {Enabled: true},
+					2: {Enabled: true},
+					3: {Enabled: true},
+					// 4: {Enabled: true},
+					// 5: {Enabled: true},
+					// 6: {Enabled: true},
+				},
+				Flavor:     Flavor{RAM: 4, VCPUs: 2},
+				ExternalIP: false,
+				Disks: []Disk{
+					{Size: 20, Bootable: true, Type: "storage"},
+				},
+				Labels: map[string]string{
+					"slrnode": "yesnaff",
+				},
+				Taints: []string{
+					"slrtaint=yestaint:NoSchedule",
 				},
 			},
 		},
