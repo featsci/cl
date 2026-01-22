@@ -46,12 +46,20 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ .Values.existingSecretName }}
+          volumeMounts:
+            {{- if .Values.beat.extraVolumeMounts }}
+            {{- toYaml .Values.beat.extraVolumeMounts | nindent 12 }}
+            {{- end }}
           resources:
             {{- toYaml .Values.beat.resources | nindent 12 }}
           livenessProbe:
             {{- toYaml .Values.beat.livenessProbe | nindent 12 }}
           readinessProbe:
             {{- toYaml .Values.beat.readinessProbe | nindent 12 }}
+      volumes:
+        {{- if .Values.beat.extraVolumes }}
+        {{- toYaml .Values.beat.extraVolumes | nindent 8 }}
+        {{- end }}
       {{- with .Values.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
