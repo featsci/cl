@@ -1,4 +1,4 @@
-replicaCount: 2
+replicaCount: 9
 resources:
   requests:
     cpu: 50m
