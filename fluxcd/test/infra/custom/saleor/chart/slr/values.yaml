@@ -68,6 +68,14 @@ api:
     #   limits:
     #     cpu: "500m"
     #     memory: "512Mi"
+  extraVolumes:
+    - name: db-patch-volume
+      configMap:
+        name: saleor-db-patch
+  extraVolumeMounts:
+    - name: db-patch-volume
+      mountPath: /app/custom_settings.py
+      subPath: custom_settings.py
 
 beat:
   enabled: true
@@ -103,6 +111,14 @@ beat:
     periodSeconds: 30
     timeoutSeconds: 5
     failureThreshold: 3
+  extraVolumes:
+    - name: db-patch-volume
+      configMap:
+        name: saleor-db-patch
+  extraVolumeMounts:
+    - name: db-patch-volume
+      mountPath: /app/custom_settings.py
+      subPath: custom_settings.py
 
 worker:
   enabled: true
@@ -137,6 +153,14 @@ worker:
     initialDelaySeconds: 20
     timeoutSeconds: 5
     periodSeconds: 30
+  extraVolumes:
+    - name: db-patch-volume
+      configMap:
+        name: saleor-db-patch
+  extraVolumeMounts:
+    - name: db-patch-volume
+      mountPath: /app/custom_settings.py
+      subPath: custom_settings.py
 
 # # Default values for slr.
 # # This is a YAML-formatted file.
