@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: saleor-db-patch
+  namespace: slr 
+data:
+  custom_settings.py: |
+    from saleor.settings import *
+    print("[TOOL] Applying custom DB settings for PgBouncer Transaction Mode...")
+
+    if 'default' in DATABASES:
+        DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
+        print("[V] DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True")
+
+    if 'replica' in DATABASES:
+        DATABASES['replica']['DISABLE_SERVER_SIDE_CURSORS'] = True

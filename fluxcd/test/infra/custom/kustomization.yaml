@@ -1,6 +1,7 @@
 resources:
   # saleor
   - "./saleor/values"
+  - "./saleor/slr-cm.yaml"
   - "./saleor/slr.yaml"
   # storefront
   # - "./storefront/values"
