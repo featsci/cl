@@ -23,7 +23,7 @@ spec:
   chart:
     spec:
       chart: fluxcd/test/infra/custom/saleor/chart/slr
-      version: '0.1.6'
+      version: '0.1.7'
       sourceRef:
         kind: GitRepository
         name: flux-system
