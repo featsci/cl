@@ -32,10 +32,6 @@ spec:
             - name: db-patch-volume
               mountPath: /app/custom_settings.py
               subPath: custom_settings.py
-      volumes:
-        - name: db-patch-volume
-          configMap:
-            name: saleor-db-patch
       containers:
         - name: beat
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
