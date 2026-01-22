@@ -7,8 +7,8 @@ spec:
   interval: 1m
   releaseName: slr
   dependsOn:
-    # - name: pg-db
-    #   namespace: pg
+    - name: pg-db
+      namespace: pg
     - name: redis-replication
       namespace:  ot-operators
   install:

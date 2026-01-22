@@ -3,11 +3,17 @@ import { check, sleep } from 'k6';
 import { randomItem } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
 
 export const options = {
-  vus: 20,           
-  duration: '5m',
+  scenarios: {
+    million_shoppers: {
+      executor: 'per-vu-iterations',
+      vus: 5000, //000,
+      iterations: 5,
+      maxDuration: '4h',
+    },
+  },
 };
 
-const API_URL = __ENV.API_URL || 'https://slr.itops.space/graphql/';
+const API_URL = __ENV.TARGET_DOMAIN;
 const CHANNEL = 'default-channel';
 
 // Запрос товаров (публичный)
@@ -24,7 +30,6 @@ const queryProducts = `
   }
 `;
 
-// Создание чекаута (как гость, передаем email в input)
 const mutationCreateCheckout = `
   mutation CreateCheckout($variantId: ID!, $email: String!) {
     checkoutCreate(
@@ -48,6 +53,13 @@ export default function () {
 
   // 1. КАТАЛОГ (Без токена)
   const resProducts = http.post(API_URL, JSON.stringify({ query: queryProducts }), { headers: headers });
+
+  // Проверка: Если сервер лежит, не пытаемся парсить JSON, иначе скрипт упадет
+  if (resProducts.status !== 200) {
+    console.error(`❌ Ошибка каталога: ${resProducts.status} ${resProducts.status_text}`);
+    sleep(1);
+    return; // Пропускаем итерацию
+  }
   
   let variantId = null;
   try {
@@ -58,19 +70,32 @@ export default function () {
         variantId = randomProduct.node.variants[0].id;
       }
     }
-  } catch (e) {}
+  } catch (e) {
+    console.error('Ошибка парсинга товаров:', e);
+  }
 
-  // 2. ПОКУПКА (Как гость)
+  // --- 2. ПОКУПКА ---
   if (variantId) {
     const resCheckout = http.post(API_URL, JSON.stringify({
       query: mutationCreateCheckout,
       variables: { variantId: variantId, email: email }
     }), { headers: headers });
 
-    const checkoutId = resCheckout.json('data.checkoutCreate.checkout.id');
-
-    if (!check(resCheckout, { 'Checkout Created': (r) => checkoutId !== undefined })) {
-        console.error(`Checkout Failed: ${JSON.stringify(resCheckout.json('data.checkoutCreate.errors'))}`);
+    // То же самое: проверяем статус перед чтением JSON
+    if (resCheckout.status !== 200) {
+       console.error(`[x] Ошибка чекаута: ${resCheckout.status} ${resCheckout.status_text}`);
+       // Форсируем провал проверки для статистики
+       check(resCheckout, { 'Checkout Created': (r) => false });
+    } else {
+       const body = resCheckout.json();
+       // Проверяем, есть ли тело ответа и нет ли ошибок GraphQL
+       const checkoutId = body.data && body.data.checkoutCreate && body.data.checkoutCreate.checkout ? body.data.checkoutCreate.checkout.id : undefined;
+       
+       check(resCheckout, { 'Checkout Created': (r) => checkoutId !== undefined });
+       
+       if (!checkoutId && body.errors) {
+         console.error('GraphQL Error:', JSON.stringify(body.errors));
+       }
     }
   }
 

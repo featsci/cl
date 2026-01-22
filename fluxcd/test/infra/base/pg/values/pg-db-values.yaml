@@ -361,6 +361,12 @@ proxy:
   pgBouncer:
     replicas: 3
     image: docker.io/percona/percona-pgbouncer:1.24.1-1
+
+    config:
+      global:
+        pool_mode: "transaction"
+        max_client_conn: "5000"
+        default_pool_size: "40"
 #    env:
 #    - name: MY_ENV
 #      value: "1000"
