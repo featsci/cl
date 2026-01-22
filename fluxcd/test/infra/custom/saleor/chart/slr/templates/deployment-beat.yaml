@@ -28,6 +28,10 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ .Values.existingSecretName }}
+          volumeMounts:
+            - name: db-patch-volume
+              mountPath: /app/custom_settings.py
+              subPath: custom_settings.py
       containers:
         - name: beat
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
