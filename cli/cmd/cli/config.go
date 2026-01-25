@@ -253,8 +253,6 @@ func getDefaultConfig() *Config {
 				Role:       "worker",
 				Instances: map[int]InstanceConfig{
 					1: {Enabled: true},
-					2: {Enabled: true},
-					// 3: {Enabled: true},
 				},
 				Flavor:     Flavor{RAM: 4, VCPUs: 2},
 				ExternalIP: false,
