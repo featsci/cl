@@ -208,7 +208,7 @@ func getDefaultConfig() *Config {
 						},
 					},
 				},
-				Flavor:     Flavor{RAM: 1, VCPUs: 1},
+				Flavor:     Flavor{RAM: 2, VCPUs: 2},
 				ExternalIP: false,
 				Disks: []Disk{
 					{Size: 20, Bootable: true, Type: "storage"},
@@ -253,8 +253,6 @@ func getDefaultConfig() *Config {
 				Role:       "worker",
 				Instances: map[int]InstanceConfig{
 					1: {Enabled: true},
-					// 2: {Enabled: true},
-					// 3: {Enabled: true},
 				},
 				Flavor:     Flavor{RAM: 4, VCPUs: 2},
 				ExternalIP: false,
@@ -292,7 +290,7 @@ func getDefaultConfig() *Config {
 					2: {Enabled: true},
 					// 3: {Enabled: true},
 				},
-				Flavor:     Flavor{RAM: 1, VCPUs: 1},
+				Flavor:     Flavor{RAM: 2, VCPUs: 2},
 				ExternalIP: false,
 				Disks: []Disk{
 					{Size: 20, Bootable: true, Type: "storage"},
