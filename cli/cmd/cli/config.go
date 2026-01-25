@@ -167,11 +167,11 @@ func getDefaultConfig() *Config {
 						},
 					},
 				},
-				Flavor:     Flavor{RAM: 16, VCPUs: 4},
+				Flavor:     Flavor{RAM: 8, VCPUs: 4},
 				ExternalIP: false,
 				Disks: []Disk{
 					{Size: 20, Bootable: true, Type: "storage"},
-					{Size: 15, Bootable: false, Type: "local"},
+					{Size: 9, Bootable: false, Type: "local"},
 				},
 				Labels: map[string]string{
 					"postgresqlnode": "yesnaff",
@@ -208,7 +208,7 @@ func getDefaultConfig() *Config {
 						},
 					},
 				},
-				Flavor:     Flavor{RAM: 2, VCPUs: 2},
+				Flavor:     Flavor{RAM: 1, VCPUs: 1},
 				ExternalIP: false,
 				Disks: []Disk{
 					{Size: 20, Bootable: true, Type: "storage"},
@@ -253,7 +253,7 @@ func getDefaultConfig() *Config {
 				Role:       "worker",
 				Instances: map[int]InstanceConfig{
 					1: {Enabled: true},
-					2: {Enabled: true},
+					// 2: {Enabled: true},
 					// 3: {Enabled: true},
 				},
 				Flavor:     Flavor{RAM: 4, VCPUs: 2},
@@ -292,7 +292,7 @@ func getDefaultConfig() *Config {
 					2: {Enabled: true},
 					// 3: {Enabled: true},
 				},
-				Flavor:     Flavor{RAM: 4, VCPUs: 2},
+				Flavor:     Flavor{RAM: 1, VCPUs: 1},
 				ExternalIP: false,
 				Disks: []Disk{
 					{Size: 20, Bootable: true, Type: "storage"},
@@ -312,9 +312,9 @@ func getDefaultConfig() *Config {
 					1: {Enabled: true},
 					2: {Enabled: true},
 					3: {Enabled: true},
-					4: {Enabled: true},
-					5: {Enabled: true},
-					6: {Enabled: true},
+					// 4: {Enabled: true},
+					// 5: {Enabled: true},
+					// 6: {Enabled: true},
 				},
 				Flavor:     Flavor{RAM: 8, VCPUs: 4},
 				ExternalIP: false,
