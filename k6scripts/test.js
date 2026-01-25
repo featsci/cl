@@ -6,7 +6,7 @@ export const options = {
   scenarios: {
     million_shoppers: {
       executor: 'per-vu-iterations',
-      vus: 5000, //000,
+      vus: 1000, //000,
       iterations: 5,
       maxDuration: '4h',
     },
