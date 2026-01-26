@@ -230,10 +230,11 @@ jobs:
       - name: Wait for Production Certificates
         run: |
           cd cli
-          ../ops-cli -name ${{ inputs.cluster_name }} -wait-cert "istio-system:monitoring-itops-space-crt-production"
-          ../ops-cli -name ${{ inputs.cluster_name }} -wait-cert "istio-system:slr-itops-space-crt-production"
-          ../ops-cli -name ${{ inputs.cluster_name }} -wait-cert "istio-system:dsf-itops-space-crt-production"
           ../ops-cli -name ${{ inputs.cluster_name }} -wait-cert "istio-system:harbor-itops-space-crt-production"
+          # ../ops-cli -name ${{ inputs.cluster_name }} -wait-cert "istio-system:monitoring-itops-space-crt-production"
+          # ../ops-cli -name ${{ inputs.cluster_name }} -wait-cert "istio-system:slr-itops-space-crt-production"
+          # ../ops-cli -name ${{ inputs.cluster_name }} -wait-cert "istio-system:dsf-itops-space-crt-production"
+
 
       - name: Login to Harbor
         uses: docker/login-action@v3
