@@ -44,7 +44,7 @@
 **Runner: Свой контейнерный рантайм в 300 строк кода**
 Второй аспект — удаленное исполнение. Обычно, чтобы запустить Ansible или Kubespray, на машине нужен Docker. Но я хотел нулевых зависимостей.
 
-Я реализовал интересный паттерн в [cmd/runner/main.go](github.com/featsci/cl/blob/main/cli/cmd/runner/main.go): мой Go-бинарник сам является контейнерным движком.
+Я реализовал интересный паттерн в [cmd/runner/main.go](https://github.com/featsci/cl/blob/main/cli/cmd/runner/main.go): мой Go-бинарник сам является контейнерным движком.
 
 *    **Self-Execution:** При запуске бинарник «клонирует» сам себя, используя системные вызовы Linux (syscall.CLONE_NEWNS, CLONE_NEWPID). Это создает изолированное пространство имен.
 
